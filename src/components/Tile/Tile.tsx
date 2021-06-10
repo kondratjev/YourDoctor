@@ -1,17 +1,22 @@
 import React from "react";
-import { StyleProp, ViewStyle } from "react-native";
-
-import { Container } from "./Tile.style";
+import { Text, View, ViewStyle } from "react-native";
+import styles from "./Tile.styles";
 
 type Props = {
+  style?: ViewStyle;
+  title: string;
   children: React.ReactNode;
-  style?: StyleProp<ViewStyle>;
 };
 
 const Tile = (props: Props) => {
-  const { style, children } = props;
+  const { style, title, children } = props;
 
-  return <Container style={style}>{children}</Container>;
+  return (
+    <View>
+      <Text style={styles.title}>{title}</Text>
+      <View style={[styles.content, style]}>{children}</View>
+    </View>
+  );
 };
 
 export default Tile;

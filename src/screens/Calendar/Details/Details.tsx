@@ -1,25 +1,15 @@
 import React from "react";
+import { Text, View } from "react-native";
 import ProgressCircle from "react-native-progress-circle";
-
+import ActionButton from "../../../components/ActionButton";
 import BottomModal from "../../../components/BottomModal";
-import Capsule from "../../../components/Icons/Pills/Capsule";
-import Check from "../../../components/Icons/Check";
-import Clock2 from "../../../components/Icons/Clock2";
-import Cross from "../../../components/Icons/Cross";
-import Menu from "../../../components/Icons/Menu";
-
+import Check from "../../../icons/Check";
+import ClockOutline from "../../../icons/ClockOutline";
+import Cross from "../../../icons/Cross";
+import Menu from "../../../icons/Menu";
+import Capsule from "../../../icons/Pills/Capsule";
 import { MEDICINE } from "../../../theme/palette";
-
-import {
-  Container,
-  Name,
-  Description,
-  Comment,
-  Buttons,
-  Button,
-  ButtonIcon,
-  ButtonLabel,
-} from "./Details.style";
+import styles from "./Details.styles";
 
 type Props = {
   medicine?: any;
@@ -35,7 +25,7 @@ const Details = (props: Props) => {
 
   return (
     <BottomModal isVisible={!!medicine} onClose={onClose}>
-      <Container>
+      <View style={styles.container}>
         <ProgressCircle
           percent={30}
           radius={25}
@@ -45,36 +35,25 @@ const Details = (props: Props) => {
           bgColor={MEDICINE.GREEN.bgColor}>
           <Capsule color={MEDICINE.GREEN.color} />
         </ProgressCircle>
-        <Name>{medicine?.name}</Name>
-        <Description>{`${medicine?.dosage} ${medicine?.eating}`}</Description>
-        {medicine?.comment && <Comment>{medicine.comment}</Comment>}
-        <Buttons>
-          <Button>
-            <ButtonIcon onPress={onAccept}>
-              <Check />
-            </ButtonIcon>
-            <ButtonLabel>Принять</ButtonLabel>
-          </Button>
-          <Button>
-            <ButtonIcon onPress={onPostpone}>
-              <Clock2 />
-            </ButtonIcon>
-            <ButtonLabel>Отложить</ButtonLabel>
-          </Button>
-          <Button>
-            <ButtonIcon onPress={onSkip}>
-              <Cross />
-            </ButtonIcon>
-            <ButtonLabel>Пропустить</ButtonLabel>
-          </Button>
-          <Button>
-            <ButtonIcon onPress={onDetails}>
-              <Menu />
-            </ButtonIcon>
-            <ButtonLabel>Подробнее</ButtonLabel>
-          </Button>
-        </Buttons>
-      </Container>
+        <Text style={styles.name}>{medicine?.name}</Text>
+        <Text
+          style={
+            styles.description
+          }>{`${medicine?.dosage} ${medicine?.eating}`}</Text>
+        {medicine?.comment && (
+          <Text style={styles.comment}>{medicine.comment}</Text>
+        )}
+        <View style={styles.buttons}>
+          <ActionButton Icon={Check} label="Принять" onPress={onAccept} />
+          <ActionButton
+            Icon={ClockOutline}
+            label="Отложить"
+            onPress={onPostpone}
+          />
+          <ActionButton Icon={Cross} label="Пропустить" onPress={onSkip} />
+          <ActionButton Icon={Menu} label="Подробнее" onPress={onDetails} />
+        </View>
+      </View>
     </BottomModal>
   );
 };

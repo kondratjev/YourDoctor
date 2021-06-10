@@ -1,81 +1,100 @@
-import React, { useState } from "react";
-import { Text, View } from "react-native";
-
-import CategoryTitle from "../../components/CategoryTitle";
-import BottomModal from "../../components/BottomModal";
-
-import { MEDICINE } from "../../theme/palette";
-
+import { useNavigation } from "@react-navigation/native";
+import React, { useCallback, useLayoutEffect, useState } from "react";
 import {
-  Container,
-  Tile,
-  NameInput,
-  Field,
-  FieldLabel,
-  FieldContent,
-  Icon,
-  Colors,
-  Color,
-  ColorInner,
-  Comment,
-} from "./MedicineDetails.style";
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import ProgressCircle from "react-native-progress-circle";
+import Tile from "../../components/Tile";
+import More from "../../icons/More";
+import Pill from "../../icons/Pills/Pill";
+import { MEDICINE } from "../../theme/palette";
+import Actions from "./Actions";
+import styles from "./MedicineDetails.styles";
+
+const Field = ({
+  style,
+  label,
+  value,
+}: {
+  style?: ViewStyle;
+  label: string;
+  value: string;
+}) => {
+  return (
+    <View style={[styles.field, style]}>
+      <Text style={styles.fieldLabel}>{label}</Text>
+      <Text style={styles.fieldText}>{value}</Text>
+    </View>
+  );
+};
 
 const MedicineDetails = () => {
-  const [selectedColor, setSelectedColor] = useState("");
-  const [isVisible, setIsVisible] = useState(false);
+  const navigation = useNavigation();
 
-  const openDetails = () => {
-    setIsVisible(true);
-  };
+  const [isActionsVisible, setActionsVisible] = useState(false);
 
-  const closeDetails = () => {
-    setIsVisible(false);
-  };
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity
+          style={{ marginRight: 20 }}
+          onPress={() => setActionsVisible(true)}>
+          <More />
+        </TouchableOpacity>
+      ),
+    });
+  }, [navigation]);
+
+  const closeActions = useCallback(() => {
+    setActionsVisible(false);
+  }, []);
+
+  const editMedicine = useCallback(() => {
+    closeActions();
+    navigation.navigate("EditMedicine");
+  }, [closeActions, navigation]);
 
   return (
-    <Container>
-      <CategoryTitle>Описание</CategoryTitle>
-      <Tile>
-        <NameInput placeholder="Название" placeholderTextColor="#9f9f9f" />
+    <ScrollView style={styles.container}>
+      <Tile title="Описание">
+        <View style={styles.tile}>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.name}>Нурофен</Text>
+              <Text style={styles.category}>Капсулы</Text>
+            </View>
+            <ProgressCircle
+              percent={50}
+              radius={25}
+              borderWidth={2}
+              color={MEDICINE.PURPLE.color}
+              shadowColor={MEDICINE.PURPLE.bgColor}
+              bgColor={MEDICINE.PURPLE.bgColor}>
+              <Pill color={MEDICINE.PURPLE.color} />
+            </ProgressCircle>
+          </View>
 
-        <Field>
-          <FieldLabel>Тип лекарства</FieldLabel>
-          <FieldContent>
-            <Icon />
-            <Text onPress={openDetails}>Some text</Text>
-          </FieldContent>
-        </Field>
-
-        <BottomModal isVisible={isVisible} onClose={closeDetails}>
-          <View
-            style={{
-              backgroundColor: "red",
-              height: 200,
-            }}
-          />
-        </BottomModal>
-
-        <Colors>
-          {Object.entries(MEDICINE).map(([label, value]) => (
-            <Color
-              key={label}
-              color={value.color}
-              isSelected={selectedColor === value.color}
-              onPress={() => setSelectedColor(value.color)}>
-              <ColorInner color={value.color} />
-            </Color>
-          ))}
-        </Colors>
+          <Field label="Периодичность" value="Каждый день" />
+          <Field label="Дозировка" value="2 раза в день — 20 мг; 40 мг." />
+          <Field label="Прием пищи" value="Не важно" />
+          <Field label="Срок приема" value="3 дня" />
+          <Field label="Комментарий" value="—" style={{ marginBottom: 0 }} />
+        </View>
       </Tile>
-      <CategoryTitle>Комментарий</CategoryTitle>
-      <Tile>
-        <Comment
-          multiline
-          placeholder="Введите комментарий"
-          placeholderTextColor="#9f9f9f"
-        />
-      </Tile>
-    </Container>
+
+      <Actions
+        isVisible={isActionsVisible}
+        onClose={closeActions}
+        onAccept={editMedicine}
+        onChange={editMedicine}
+        onStop={editMedicine}
+        onRemove={editMedicine}
+      />
+    </ScrollView>
   );
 };
 

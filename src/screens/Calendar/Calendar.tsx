@@ -1,32 +1,73 @@
-import React, { Fragment, useCallback, useMemo, useRef, useState } from "react";
-import { Dimensions, FlatList, ScrollView } from "react-native";
-import { isSameDay, subMonths, addMonths, addWeeks, subWeeks } from "date-fns";
-
-import CategoryTitle from "../../components/CategoryTitle";
-import CalendarMedicine from "../../components/Medicine";
-import Tile from "../../components/Tile";
-import Capsule from "../../components/Icons/Pills/Capsule";
-
+import { useNavigation } from "@react-navigation/core";
+import { addMonths, format, isSameDay, subMonths } from "date-fns";
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import {
+  Dimensions,
+  FlatList,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
+import CalendarMedicine from "../../components/Medicine2";
+import List from "../../icons/List";
+import Capsule from "../../icons/Pills/Capsule";
+import { MEDICINE } from "../../theme/palette";
+import { week } from "../../__mock__/calendar";
+import styles from "./Calendar.styles";
 import CalendarStrip from "./CalendarStrip";
 import Details from "./Details";
 
-import { MEDICINE } from "../../theme/palette";
-import { week } from "../../__mock__/calendar";
-
-import { Container, Placeholder, PlaceholderText } from "./Calendar.style";
-
 const Calendar = () => {
   const stripRef = useRef<FlatList>(null);
-  const scrollViewRef = useRef<FlatList<any>>();
+  const flatListRef = useRef<FlatList>(null);
+
+  const navigation = useNavigation();
 
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedMedicine, setSelectedMedicine] = useState<any>();
 
-  const onSelectDate = useCallback((date: Date) => {
+  useEffect(() => {
+    navigation.setOptions({
+      title: format(selectedDate, "d MMMM"),
+    });
+  }, [navigation, selectedDate]);
+
+  const goToMedicines = useCallback(() => {
+    navigation.navigate("Medicines");
+  }, [navigation]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity style={{ marginRight: 20 }} onPress={goToMedicines}>
+          <List />
+        </TouchableOpacity>
+      ),
+    });
+  }, [goToMedicines, navigation]);
+
+  const onDateChange = useCallback((date: Date) => {
     setSelectedDate(date);
     const index = week.findIndex((item) => isSameDay(item.date, date));
-    scrollViewRef.current?.scrollToIndex({ index });
+    flatListRef.current?.scrollToIndex({ index, animated: false });
   }, []);
+
+  const onWeekChange = useCallback(
+    (date: Date) => {
+      onDateChange(date);
+    },
+    [onDateChange],
+  );
 
   const selectMedicine = useCallback(
     (medicine: any) => () => {
@@ -39,107 +80,83 @@ const Calendar = () => {
     setSelectedMedicine(undefined);
   }, []);
 
-  const viewabilityConfig = useMemo(
-    () => ({
-      itemVisiblePercentThreshold: 50,
-      minimumViewTime: 150,
-    }),
-    [],
-  );
-
   const initialScrollIndex = useMemo(() => {
-    if (selectedDate) {
-      return week.findIndex((item) => isSameDay(item.date, selectedDate));
-    } else {
-      return 0;
-    }
+    return week.findIndex((item) => isSameDay(item.date, selectedDate));
   }, [selectedDate]);
 
-  const onStripScrollEnd = useCallback(
-    (direction: "left" | "right", offset: number) => {
-      const date =
-        direction === "right"
-          ? addWeeks(selectedDate, offset)
-          : subWeeks(selectedDate, offset);
-      onSelectDate(date);
-    },
-    [onSelectDate, selectedDate],
-  );
-
-  const onViewableItemsChanged = useCallback(({ viewableItems }) => {
-    if (viewableItems.length === 1) {
-      setSelectedDate(viewableItems[0].item.date);
-    }
-  }, []);
+  const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const currentOffset = event.nativeEvent.contentOffset.x;
+    const index = Math.round(currentOffset / ITEM_WIDTH);
+    setSelectedDate(week[index].date);
+  };
 
   const ITEM_WIDTH = Dimensions.get("window").width;
 
-  const getItemLayout = useCallback(
-    (_, index) => ({
-      length: ITEM_WIDTH,
-      offset: ITEM_WIDTH * index,
-      index,
-    }),
-    [ITEM_WIDTH],
-  );
+  const getItemLayout = (_, index) => ({
+    length: ITEM_WIDTH,
+    offset: ITEM_WIDTH * index,
+    index,
+  });
 
-  const renderItem = useCallback(
-    ({ item }) => {
-      return item.items.length ? (
-        <ScrollView key={item.date.toISOString()} style={{ width: ITEM_WIDTH }}>
-          {item.items.map((day, dayIndex) => (
-            <Fragment key={dayIndex}>
-              <CategoryTitle>{day.title}</CategoryTitle>
-              <Tile>
-                {day.medicines.map((medicine, index, itemData) => (
-                  <CalendarMedicine
-                    onPress={selectMedicine(medicine)}
-                    Icon={Capsule}
-                    palette={MEDICINE.GREEN}
-                    key={medicine.id}
-                    title={medicine.name}
-                    description={`${medicine.dosage} ${medicine.eating}`}
-                    time={medicine.time}
-                    isLast={index === itemData.length - 1}
-                  />
-                ))}
-              </Tile>
-            </Fragment>
-          ))}
-        </ScrollView>
-      ) : (
-        <Placeholder>
-          <PlaceholderText>Нет лекарств</PlaceholderText>
-        </Placeholder>
-      );
-    },
-    [ITEM_WIDTH, selectMedicine],
-  );
+  const renderItem = ({ item }) => {
+    return item.items.length ? (
+      <ScrollView key={item.date.toISOString()} style={{ width: ITEM_WIDTH }}>
+        {item.items.map((day, dayIndex) => (
+          <View key={dayIndex} style={{ marginTop: 25 }}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "600",
+                marginLeft: 25,
+                color: "#222",
+              }}>
+              12:00
+            </Text>
+            {day.medicines.map((medicine) => (
+              <CalendarMedicine
+                onPress={selectMedicine(medicine)}
+                Icon={Capsule}
+                palette={MEDICINE.GREEN}
+                key={medicine.id}
+                name={medicine.name}
+                description={`${medicine.dosage} ${medicine.eating}`}
+              />
+            ))}
+          </View>
+        ))}
+      </ScrollView>
+    ) : (
+      <View style={styles.placeholder}>
+        <Text style={styles.placeholderText}>Нет лекарств</Text>
+      </View>
+    );
+  };
 
   return (
-    <Container>
+    <View style={styles.container}>
       <CalendarStrip
         stripRef={stripRef}
         start={subMonths(new Date(), 1)}
         end={addMonths(new Date(), 1)}
         selectedDate={selectedDate}
-        onSelectDate={onSelectDate}
-        onScrollEnd={onStripScrollEnd}
+        onDateChange={onDateChange}
+        onWeekChange={onWeekChange}
       />
 
       <FlatList
-        ref={scrollViewRef}
+        ref={flatListRef}
         data={week}
         horizontal
         pagingEnabled
         decelerationRate="fast"
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => `${item.date}`}
-        onViewableItemsChanged={onViewableItemsChanged}
-        viewabilityConfig={viewabilityConfig}
         initialScrollIndex={initialScrollIndex}
         renderItem={renderItem}
         getItemLayout={getItemLayout}
+        scrollEventThrottle={16}
+        initialNumToRender={7}
+        onMomentumScrollEnd={onScrollEnd}
       />
 
       <Details
@@ -150,7 +167,7 @@ const Calendar = () => {
         onSkip={clearMedicine}
         onDetails={clearMedicine}
       />
-    </Container>
+    </View>
   );
 };
 

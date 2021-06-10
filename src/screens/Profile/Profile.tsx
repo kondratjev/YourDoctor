@@ -1,23 +1,11 @@
-import { useNavigation } from "@react-navigation/native";
-import React, { useCallback } from "react";
+import React from "react";
 
-import Medicine from "../../components/Medicine";
-import CategoryTitle from "../../components/CategoryTitle";
 import Tile from "../../components/Tile";
 
-import ArrowRight from "../../components/Icons/ArrowRight";
-import Drop from "../../components/Icons/Pills/Drop";
-
-import { MEDICINE } from "../../theme/palette";
+import ArrowRight from "../../icons/ArrowRight";
 
 import {
   Container,
-  Head,
-  HeadPhoto,
-  HeadGradient,
-  HeadFooter,
-  HeadName,
-  HeadInfo,
   Measurement,
   MeasurementWrapper,
   MeasurementInfo,
@@ -31,16 +19,9 @@ import {
 } from "./Profile.style";
 
 const Profile = () => {
-  const navigation = useNavigation();
-
-  const goToMedicines = useCallback(() => {
-    navigation.navigate("Medicines");
-  }, [navigation]);
-
   return (
     <Container>
-      <CategoryTitle>Последние измерения</CategoryTitle>
-      <Tile>
+      <Tile title="Последние измерения">
         <Measurement>
           <MeasurementWrapper>
             <MeasurementInfo>
@@ -67,27 +48,6 @@ const Profile = () => {
         </Measurement>
         <CategoryButton>
           <CategoryButtonText>Все медданные</CategoryButtonText>
-          <ArrowRight />
-        </CategoryButton>
-      </Tile>
-      <CategoryTitle>Принимаемые лекарства</CategoryTitle>
-      <Tile>
-        <Medicine
-          percent={50}
-          Icon={Drop}
-          palette={MEDICINE.RED}
-          title="Цитрамон"
-          description="Осталось 3 приема"
-        />
-        <Medicine
-          percent={20}
-          Icon={Drop}
-          palette={MEDICINE.PURPLE}
-          title="Цитрамон"
-          description="Осталось 7 приемов"
-        />
-        <CategoryButton onPress={goToMedicines}>
-          <CategoryButtonText>Все лекарства</CategoryButtonText>
           <ArrowRight />
         </CategoryButton>
       </Tile>

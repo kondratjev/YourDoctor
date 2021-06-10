@@ -5,7 +5,6 @@ import {
   startOfWeek,
   subMonths,
 } from "date-fns";
-import { ru } from "date-fns/locale";
 
 const items = [
   {
@@ -53,11 +52,55 @@ const items = [
       },
     ],
   },
+  {
+    title: "Вечер",
+    medicines: [
+      {
+        id: "0",
+        type: "Капли",
+        name: "Цитрамон",
+        dosage: "100 мг",
+        eating: "до еды",
+        time: "10:30",
+      },
+      {
+        id: "1",
+        type: "Капли",
+        name: "Цитрамон",
+        dosage: "100 мг",
+        eating: "до еды",
+        time: "10:30",
+        comment: "Комментарий длинный как мой хер, хехе",
+      },
+    ],
+  },
+  {
+    title: "Ночь",
+    medicines: [
+      {
+        id: "0",
+        type: "Капли",
+        name: "Цитрамон",
+        dosage: "100 мг",
+        eating: "до еды",
+        time: "10:30",
+      },
+      {
+        id: "1",
+        type: "Капли",
+        name: "Цитрамон",
+        dosage: "100 мг",
+        eating: "до еды",
+        time: "10:30",
+        comment: "Комментарий длинный как мой хер, хехе",
+      },
+    ],
+  },
 ];
 
 export const week = eachDayOfInterval({
-  start: startOfWeek(subMonths(new Date(), 1), { locale: ru }),
-  end: endOfWeek(addMonths(new Date(), 1), { locale: ru }),
+  start: startOfWeek(subMonths(new Date(), 1)),
+  end: endOfWeek(addMonths(new Date(), 1)),
 }).map((date, index) => {
   return {
     date,

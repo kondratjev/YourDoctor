@@ -1,42 +1,8 @@
 import styled from "styled-components/native";
-import LinearGradient from "react-native-linear-gradient";
 
 export const Container = styled.ScrollView`
   background-color: #f5f6f8;
   flex: 1;
-`;
-
-export const Head = styled.View``;
-
-export const HeadPhoto = styled.Image`
-  width: 100%;
-  height: 300px;
-`;
-
-export const HeadGradient = styled(LinearGradient)`
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  height: 100%;
-`;
-
-export const HeadFooter = styled.View`
-  position: absolute;
-  bottom: 20px;
-  left: 15px;
-`;
-
-export const HeadName = styled.Text`
-  color: #fff;
-  font-size: 26px;
-  font-weight: 500;
-  line-height: 40px;
-`;
-
-export const HeadInfo = styled.Text`
-  color: #eee;
-  font-size: 16px;
 `;
 
 export const Measurement = styled.View`

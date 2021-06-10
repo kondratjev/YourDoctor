@@ -1,17 +1,19 @@
 import React from "react";
-import { StyleProp, ViewStyle } from "react-native";
-
 import {
-  Container,
-  Wrapper,
-  IconBackground,
-  Name,
-  Description,
-} from "./Group.style";
+  GestureResponderEvent,
+  StyleProp,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+
+import styles from "./Group.styles";
 
 type Props = {
   style?: StyleProp<ViewStyle>;
   Icon: ({ color }: { color?: string | undefined }) => JSX.Element;
+  onPress: (event: GestureResponderEvent) => void;
   group: {
     name: string;
     count: number;
@@ -24,18 +26,22 @@ type Props = {
 };
 
 const Group = (props: Props) => {
-  const { style, Icon, group, isLast, palette } = props;
+  const { style, Icon, onPress, group, isLast, palette } = props;
 
   return (
-    <Container style={style}>
-      <IconBackground bgColor={palette.bgColor}>
+    <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
+      <View
+        style={[styles.iconBackground, { backgroundColor: palette.bgColor }]}>
         <Icon color={palette.color} />
-      </IconBackground>
-      <Wrapper isLast={isLast}>
-        <Name>{group.name}</Name>
-        <Description>{group.count} лекарства</Description>
-      </Wrapper>
-    </Container>
+      </View>
+      <View
+        style={
+          isLast ? styles.content : [styles.content, styles.contentBorder]
+        }>
+        <Text style={styles.name}>{group.name}</Text>
+        <Text style={styles.description}>{group.count} лекарства</Text>
+      </View>
+    </TouchableOpacity>
   );
 };
 

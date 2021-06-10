@@ -1,46 +1,42 @@
+import {
+  addDays,
+  addWeeks,
+  eachDayOfInterval,
+  format,
+  isSameDay,
+  startOfWeek,
+  subWeeks,
+} from "date-fns";
 import React, {
-  useMemo,
+  RefObject,
   useCallback,
-  useState,
   useEffect,
+  useMemo,
   useRef,
+  useState,
 } from "react";
 import {
   Dimensions,
   FlatList,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import {
-  addDays,
-  eachDayOfInterval,
-  format,
-  isSameDay,
-  startOfWeek,
-} from "date-fns";
-import { ru } from "date-fns/locale";
-
-import {
-  Container,
-  Item,
-  Day,
-  DayShortName,
-  DayNumberWrapper,
-  DayNumber,
-  CurrentDate,
-} from "./CalendarStrip.style";
+import styles from "./CalendarStrip.styles";
 
 type Props = {
-  stripRef: React.RefObject<FlatList<any>>;
+  stripRef: RefObject<FlatList<any>>;
   start: Date;
   end: Date;
-  selectedDate?: Date;
-  onSelectDate: (date: Date) => void;
-  onScrollEnd: (direction: "left" | "right", offset: number) => void;
+  selectedDate: Date;
+  onDateChange: (date: Date) => void;
+  onWeekChange: (date: Date) => void;
 };
 
 const CalendarStrip = (props: Props) => {
-  const { start, end, selectedDate, onSelectDate, onScrollEnd } = props;
+  const { start, end, selectedDate, onDateChange, onWeekChange } = props;
 
   const stripRef = useRef<FlatList>(null);
 
@@ -51,12 +47,12 @@ const CalendarStrip = (props: Props) => {
     const firstDOW = startOfWeek(new Date());
     return Array(7)
       .fill(null)
-      .map((_, i) => format(addDays(firstDOW, i), "EEEEEE", { locale: ru }));
+      .map((_, i) => format(addDays(firstDOW, i), "EEEEEE"));
   }, []);
 
   const weeks = useMemo(() => {
-    let startDate = startOfWeek(start, { locale: ru });
-    const endDate = startOfWeek(end, { locale: ru });
+    let startDate = startOfWeek(start);
+    const endDate = startOfWeek(end);
     const days = [];
     while (startDate <= endDate) {
       days.push(
@@ -71,40 +67,54 @@ const CalendarStrip = (props: Props) => {
   }, [end, start]);
 
   const initialScrollIndex = useMemo(() => {
-    if (selectedDate) {
-      return weeks.findIndex((item) => {
-        return item.some((subitem) => isSameDay(subitem, selectedDate));
-      });
-    } else {
-      return 0;
-    }
+    return weeks.findIndex((item) => {
+      return item.some((subitem) => isSameDay(subitem, selectedDate));
+    });
   }, [selectedDate, weeks]);
 
   const onPress = useCallback(
     (date: Date) => () => {
-      onSelectDate(date);
+      onDateChange(date);
     },
-    [onSelectDate],
+    [onDateChange],
   );
 
   const renderItem = useCallback(
     ({ item }: { item: Date[] }) => {
       return (
-        <Item>
+        <View style={styles.item}>
           {item.map((date) => {
             const isSelected = !!selectedDate && isSameDay(date, selectedDate);
             return (
-              <Day key={date.toISOString()} onPress={onPress(date)}>
-                <DayShortName>{shortWeekDays[date.getDay()]}</DayShortName>
-                <DayNumberWrapper isSelected={isSelected}>
-                  <DayNumber isSelected={isSelected}>
+              <TouchableOpacity
+                key={date.toISOString()}
+                style={styles.day}
+                onPress={onPress(date)}>
+                <Text style={styles.dayShortName}>
+                  {shortWeekDays[date.getDay()]}
+                </Text>
+                <View
+                  style={
+                    isSelected
+                      ? [
+                          styles.dayNumberWrapper,
+                          styles.dayNumberWrapperSelected,
+                        ]
+                      : styles.dayNumberWrapper
+                  }>
+                  <Text
+                    style={
+                      isSelected
+                        ? [styles.dayNumber, styles.dayNumberSelected]
+                        : styles.dayNumber
+                    }>
                     {date.getDate()}
-                  </DayNumber>
-                </DayNumberWrapper>
-              </Day>
+                  </Text>
+                </View>
+              </TouchableOpacity>
             );
           })}
-        </Item>
+        </View>
       );
     },
     [onPress, selectedDate, shortWeekDays],
@@ -129,12 +139,15 @@ const CalendarStrip = (props: Props) => {
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const currentOffset = event.nativeEvent.contentOffset.x;
       const diff = currentOffset - offset;
-      const direction = diff > 0 ? "right" : "left";
-      const index = Math.round(Math.abs(diff / WIDTH));
-      onScrollEnd(direction, index);
+      const count = Math.round(Math.abs(diff / WIDTH));
+      if (diff > 0) {
+        onWeekChange(addWeeks(selectedDate, count));
+      } else {
+        onWeekChange(subWeeks(selectedDate, count));
+      }
       setOffset(currentOffset);
     },
-    [WIDTH, offset, onScrollEnd],
+    [WIDTH, offset, onWeekChange, selectedDate],
   );
 
   useEffect(() => {
@@ -143,14 +156,14 @@ const CalendarStrip = (props: Props) => {
         return item.some((subitem) => isSameDay(subitem, selectedDate));
       });
       if (currentIndex !== index) {
-        stripRef.current?.scrollToIndex({ index });
+        stripRef.current?.scrollToIndex({ index, animated: false });
         setCurrentIndex(index);
       }
     }
   }, [currentIndex, selectedDate, weeks]);
 
   return (
-    <Container>
+    <View style={styles.container}>
       <FlatList
         ref={stripRef}
         horizontal
@@ -163,12 +176,11 @@ const CalendarStrip = (props: Props) => {
         keyExtractor={(_, index) => `${index}`}
         renderItem={renderItem}
         getItemLayout={getItemLayout}
+        scrollEventThrottle={16}
+        initialNumToRender={7}
         onMomentumScrollEnd={onMomentumScrollEnd}
       />
-      <CurrentDate>
-        {selectedDate && format(selectedDate, "d MMMM", { locale: ru })}
-      </CurrentDate>
-    </Container>
+    </View>
   );
 };
 

@@ -1,49 +1,47 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useLayoutEffect } from "react";
+import { ScrollView, TouchableOpacity, View } from "react-native";
+import { useNavigation } from "@react-navigation/native";
 
-import CategoryTitle from "../../components/CategoryTitle";
 import Medicine from "../../components/Medicine";
 import Tile from "../../components/Tile";
-import Folder from "../../components/Icons/Pills/Folder";
-import Capsule from "../../components/Icons/Pills/Capsule";
-import Drop from "../../components/Icons/Pills/Drop";
+// import Folder from "../../icons/Pills/Folder";
+import Capsule from "../../icons/Pills/Capsule";
+import Pill from "../../icons/Pills/Pill";
 
 import { MEDICINE } from "../../theme/palette";
-
-import Group from "./Group";
-
-import { Container } from "./Medicines.style";
-import { useNavigation } from "@react-navigation/native";
+// import Group from "./Group";
+import styles from "./Medicines.styles";
+import Plus from "../../icons/Plus";
 
 const Medicines = () => {
   const navigation = useNavigation();
+
+  const goToMedicines = useCallback(() => {
+    navigation.navigate("MedicineDetails");
+  }, [navigation]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <TouchableOpacity style={{ marginRight: 20 }} onPress={goToMedicines}>
+          <Plus />
+        </TouchableOpacity>
+      ),
+    });
+  }, [goToMedicines, navigation]);
 
   const openDetails = useCallback(() => {
     navigation.navigate("MedicineDetails");
   }, [navigation]);
 
   return (
-    <Container>
-      <CategoryTitle>Группы</CategoryTitle>
-      <Tile>
-        <Group
-          Icon={Folder}
-          palette={MEDICINE.GREEN}
-          group={{ name: "От спины", count: 2 }}
-        />
-        <Group
-          Icon={Folder}
-          palette={MEDICINE.RED}
-          group={{ name: "От спины", count: 2 }}
-          isLast
-        />
-      </Tile>
-      <CategoryTitle>Остальные лекарства</CategoryTitle>
-      <Tile>
+    <ScrollView style={styles.container}>
+      <Tile title="Лекарства">
         <Medicine
           percent={50}
-          Icon={Drop}
+          Icon={Pill}
           palette={MEDICINE.PURPLE}
-          title="Цитрамон"
+          name="Цитрамон"
           description="Осталось 7 приемов"
           onPress={openDetails}
         />
@@ -51,13 +49,13 @@ const Medicines = () => {
           percent={25}
           Icon={Capsule}
           palette={MEDICINE.RED}
-          title="Цитрамон"
+          name="Цитрамон"
           description="Осталось 12 приемов"
           onPress={openDetails}
           isLast
         />
       </Tile>
-    </Container>
+    </ScrollView>
   );
 };
 

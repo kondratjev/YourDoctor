@@ -1,22 +1,20 @@
 import React from "react";
-import { GestureResponderEvent, StyleProp, ViewStyle } from "react-native";
-import ProgressCircle from "react-native-progress-circle";
-
 import {
-  Container,
-  Wrapper,
-  Content,
-  Name,
-  Description,
-  Time,
-} from "./Medicine.style";
+  GestureResponderEvent,
+  Text,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
+import ProgressCircle from "react-native-progress-circle";
+import styles from "./Medicine.styles";
 
 type Props = {
-  style?: StyleProp<ViewStyle>;
+  style?: ViewStyle;
   percent?: number;
   Icon: ({ color }: { color?: string | undefined }) => JSX.Element;
   onPress: (event: GestureResponderEvent) => void;
-  title: string;
+  name: string;
   description: string;
   time?: string;
   isLast?: boolean;
@@ -32,7 +30,7 @@ const Medicine = (props: Props) => {
     Icon,
     onPress,
     percent = 0,
-    title,
+    name,
     description,
     time,
     isLast,
@@ -40,7 +38,7 @@ const Medicine = (props: Props) => {
   } = props;
 
   return (
-    <Container style={style} onPress={onPress}>
+    <TouchableOpacity style={[styles.container, style]} onPress={onPress}>
       <ProgressCircle
         percent={percent}
         radius={25}
@@ -50,14 +48,17 @@ const Medicine = (props: Props) => {
         bgColor={palette.bgColor}>
         <Icon color={palette.color} />
       </ProgressCircle>
-      <Wrapper isLast={isLast}>
-        <Content>
-          <Name>{title}</Name>
-          <Description>{description}</Description>
-        </Content>
-        {time && <Time>{time}</Time>}
-      </Wrapper>
-    </Container>
+      <View
+        style={
+          isLast ? styles.content : [styles.content, styles.contentBorder]
+        }>
+        <View>
+          <Text style={styles.name}>{name}</Text>
+          <Text style={styles.description}>{description}</Text>
+        </View>
+        {time && <Text style={styles.time}>{time}</Text>}
+      </View>
+    </TouchableOpacity>
   );
 };
 
